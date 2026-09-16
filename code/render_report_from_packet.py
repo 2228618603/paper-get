@@ -12,9 +12,7 @@ import argparse
 import datetime as dt
 import html
 import json
-import os
 import re
-import time
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -579,29 +577,12 @@ def translate_sentences(aid: str, sentences: list[str], cache: dict) -> list[str
     cached = cache.get(aid)
     if cached and cached.get("en") == sentences and cached.get("zh"):
         return cached["zh"]
-    if os.environ.get("USE_REMOTE_TRANSLATION") != "1":
-        fallback = split_sentences(META[aid]["abstract"]) if aid in META else []
-        if not fallback:
-            fallback = ["中文对照翻译待补；请先阅读左侧英文原文。"]
-        while len(fallback) < len(sentences):
-            fallback.append("中文对照翻译待补；请先阅读左侧英文原文。")
-        cache[aid] = {"en": sentences, "zh": fallback[: len(sentences)], "mode": "local_fallback"}
-        return cache[aid]["zh"]
-    try:
-        from deep_translator import MyMemoryTranslator
-
-        translator = MyMemoryTranslator(source="en-US", target="zh-CN")
-        translated: list[str] = []
-        for start in range(0, len(sentences), 6):
-            batch = sentences[start : start + 6]
-            translated.extend(translator.translate_batch(batch))
-            time.sleep(0.35)
-        cache[aid] = {"en": sentences, "zh": translated}
-        return translated
-    except Exception:
-        fallback = [META[aid]["abstract"]] if aid in META else ["翻译服务暂不可用；请先对照英文原文阅读。"]
-        cache[aid] = {"en": sentences, "zh": fallback}
-        return fallback
+    cache[aid] = {
+        "en": sentences,
+        "zh": ["中文逐句翻译待补；请运行 `python3 code/translate_abstracts.py --date REPORT_DATE --root .` 补全本句。" for _ in sentences],
+        "mode": "pending_translation",
+    }
+    return cache[aid]["zh"]
 
 
 def render_abstract_pairs(aid: str, item: dict, cache: dict) -> str:

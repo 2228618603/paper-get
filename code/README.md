@@ -8,6 +8,7 @@
 - `sources.json`：企业、实验室、关键词和优先级配置。
 - `generate_report.py`：抓取近一周 arXiv 元数据并生成候选论文包；可作为每日任务的第一步。
 - `render_report_from_packet.py`：把候选包和人工核验后的排序规则渲染成 HTML，并维护当月去重日志。
+- `translate_abstracts.py`：逐句补全摘要中文翻译缓存；可断点续跑，避免翻译服务阻塞日报生成。
 - `YYYY-MM/seen-YYYY-MM.md`：当前月份的去重日志；每日只读写当月文件，避免重复报道。
 
 ## 手动运行
@@ -32,6 +33,14 @@ python3 code/generate_report.py --date 2026-09-16 --days 7 --output-root .
 python3 code/render_report_from_packet.py --date 2026-09-16 --root .
 ```
 
+如果摘要翻译缓存中有“待补”句子，可单独运行：
+
+```bash
+python3 code/translate_abstracts.py --date 2026-09-16 --root . --max-sentences 40
+```
+
+该脚本会把结果写入 `YYYY-MM/abstract-translations-YYYY-MM-DD.json`。公共翻译服务可能限流，因此脚本支持多次断点续跑。
+
 ## 自动运行
 
 桌面端定时任务使用 `prompt.md` 作为代理任务说明。代理每次运行时应：
@@ -43,7 +52,7 @@ python3 code/render_report_from_packet.py --date 2026-09-16 --root .
 5. 先分别整理三部分：与你课题强相关的论文、扩展补充论文、News，再合并成 HTML；
 6. 强相关论文最多 30 篇，扩展补充论文最多 10 篇，News 最多 20 条，但不强行填满；
 7. 对每篇论文标注研究机构/团队、机构简介、代码状态、真机状态、实验设置和编辑评述；一作/通讯背调只作为后台排序依据，不在页面展示；
-8. 每篇论文只保留摘要折叠块，摘要需保留英文原句并做中文逐句对照；不再翻译 Introduction；
+8. 每篇论文只保留摘要折叠块，摘要需保留英文原句并做中文逐句对照；翻译缓存不足时明确标注待补，不得用概括译述冒充逐句翻译；不再翻译 Introduction；
 9. 生成 `YYYY-MM/YYYY-MM-DD-风向总结.html`；
 10. 更新当前月去重日志。
 
