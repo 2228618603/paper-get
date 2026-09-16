@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026-09-16-具身智能从会动到能纠错：VLA进入频域建模与真机在线自进化</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #5e6b76;
+      --line: #d9e0e5;
+      --paper: #fbfcfd;
+      --blue: #1d5f8a;
+      --blue-soft: #eaf3f8;
+      --green: #276749;
+      --green-soft: #e8f5ee;
+      --amber: #8a5a12;
+      --amber-soft: #fff4dc;
+      --red: #8d2f2f;
+      --red-soft: #fbeaea;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.72 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
+    header { border-bottom: 1px solid var(--line); padding-bottom: 24px; }
+    .eyebrow {
+      color: var(--blue); font-size: 13px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    h1 { margin: 8px 0 12px; font-size: clamp(28px, 5vw, 48px); line-height: 1.15; }
+    h2 { margin: 38px 0 14px; font-size: 26px; line-height: 1.25; }
+    h3 { margin: 0 0 8px; font-size: 20px; line-height: 1.35; }
+    p { margin: 8px 0; }
+    .meta { color: var(--muted); font-size: 14px; }
+    .signal {
+      margin: 22px 0 10px; padding: 18px 20px; border-left: 4px solid var(--blue);
+      background: var(--blue-soft);
+    }
+    .signal strong { display: block; margin-bottom: 4px; }
+    .section-lead { color: var(--muted); margin-top: -4px; }
+    .paper, .news {
+      border-top: 1px solid var(--line); padding: 23px 0 25px;
+    }
+    .paper:first-of-type, .news:first-of-type { border-top: 0; }
+    .paper-head { display: flex; gap: 14px; align-items: flex-start; }
+    .num {
+      flex: 0 0 auto; width: 32px; height: 32px; display: grid; place-items: center;
+      background: var(--ink); color: white; font-weight: 700; border-radius: 50%;
+    }
+    .paper-title { flex: 1; }
+    .paper-title h3 { margin-bottom: 3px; }
+    .original { color: var(--muted); font-size: 14px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0; }
+    .badge {
+      display: inline-block; padding: 3px 9px; border: 1px solid var(--line);
+      border-radius: 999px; font-size: 12px; line-height: 1.5; color: var(--muted);
+      background: white;
+    }
+    .badge.good { color: var(--green); border-color: #acd9bf; background: var(--green-soft); }
+    .badge.warn { color: var(--amber); border-color: #e6c47f; background: var(--amber-soft); }
+    .badge.risk { color: var(--red); border-color: #e4b2b2; background: var(--red-soft); }
+    .summary { max-width: 980px; }
+    details {
+      margin-top: 13px; border: 1px solid var(--line); background: white;
+      border-radius: 6px; overflow: hidden;
+    }
+    summary { cursor: pointer; padding: 10px 13px; font-weight: 700; }
+    details > div { border-top: 1px solid var(--line); padding: 13px 15px; color: #33414c; }
+    .news-title { display: flex; gap: 10px; align-items: baseline; }
+    .news-title h3 { margin: 0; }
+    .date { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .note {
+      margin-top: 26px; padding: 15px 17px; background: #f1f4f6; color: #44515b;
+      border: 1px solid var(--line); border-radius: 6px; font-size: 14px;
+    }
+    footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 640px) {
+      .wrap { padding: 22px 15px 48px; }
+      h2 { margin-top: 30px; }
+      .paper-head { gap: 10px; }
+      .num { width: 28px; height: 28px; font-size: 14px; }
+      .news-title { display: block; }
+      .date { display: block; margin-top: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">Daily Paper Loop · 2026-09-16</div>
+      <h1>具身智能从会动到能纠错：VLA进入频域建模与真机在线自进化</h1>
+      <div class="meta">报告日期：2026年9月16日　|　检索窗口：2026年9月9日—9月16日（重点观察9月14日—16日）　|　时区：Asia/Shanghai</div>
+      <div class="signal">
+        <strong>今日风向</strong>
+        具身基础模型的竞争焦点正在从“能否输出动作”转向“动作是否足够快、数据是否值得学、世界模型能否生成恢复经验”。本周最值得跟踪的组合是：WAM把未来预测与动作决策合在一起，VLA开始显式利用频率与时间结构，模型则通过人类视频、梯度兼容性筛选和自身模拟器形成更完整的学习闭环。
+      </div>
+    </header>
+
+    <section>
+      <h2>一、具身智能主栏</h2>
+      <p class="section-lead">最多5篇。优先展示 VLA、WAM、真机、自进化和数据闭环；代码与真机证据单独标注。</p>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">1</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.17372" target="_blank" rel="noopener">XPACE：联合世界建模与动作建模，从异构经验中自我改进</a></h3>
+            <div class="original">XPACE: Joint World and Action Modeling from Heterogeneous Experience · 2026-09-15 · XPENG Robotics</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：WAM / 世界模型 / 自进化</span>
+          <span class="badge good">真机：IRON 人形机器人</span>
+          <span class="badge warn">代码：论文页未给直接仓库</span>
+        </div>
+        <div class="summary">
+          <p>XPACE把一个模型同时当作“动作策略”和“世界模拟器”：它既根据视觉与语言生成可执行动作，也预测指定动作会带来什么未来视频。训练时混合无动作标签的人类视频、带动作的人类/机器人示范和机器人遥操作数据，用共享的视频骨干把不同来源的经验接起来。</p>
+          <p>更有意思的是它把自己的模拟器用于生成“偏离后如何恢复”的训练样本，再筛选这些恢复轨迹去改进策略。论文在 XPENG IRON 人形机器人上报告了人类经验迁移和模拟恢复数据带来的真机收益，说明 WAM 正从预测模块向数据生产与策略改进环节延伸。</p>
+        </div>
+        <details>
+          <summary>摘要中文译述</summary>
+          <div>通用机器人需要利用多样经验、选择动作并预测动作对世界的影响。XPACE提出统一的具身世界模型，同时承担世界-动作模型和世界模拟器两种角色：前者联合预测可执行机器人动作与未来视频，后者预测给定动作的视觉后果。系统使用无动作标签视频学习视觉动态，使用带动作的人类和机器人示范学习动作与视频，并以由粗到细的课程保留人类经验、逐渐强化机器人控制。进一步地，模型根据自身模拟器生成偏离轨迹后的恢复监督，用于策略改进。作者在 IRON 人形机器人上展示了异构训练提升鲁棒性、把人类观察到的技能迁移到机器人未示范任务，以及模拟器生成恢复数据继续提升真机完成度。</div>
+        </details>
+        <details>
+          <summary>Introduction 中文译述</summary>
+          <div>引言把问题概括为：人类会观察别人、与世界互动，再用经验预测动作后果并修正行为；机器人学习通常把人类视频、机器人示范和视频生成分开处理，难以形成同一条闭环。XPACE的切入点是让视频预测连接异构经验，让动作预测和未来视觉后果共享表示，并在生成上下文上继续训练模型，避免模拟器只会生成“成功轨迹”。这使得模型不仅能模仿已有数据，还能围绕专家轨迹制造偏离与恢复经验。</div>
+        </details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">2</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.17524" target="_blank" rel="noopener">ModAR：模态自回归的 World-Action Model</a></h3>
+            <div class="original">Modality-Autoregressive World-Action Models · 2026-09-15 · Carnegie Mellon / Pittsburgh 相关作者</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：WAM / 多模态未来预测</span>
+          <span class="badge good">真机：3项双臂任务</span>
+          <span class="badge warn">代码：项目页标注 coming soon</span>
+        </div>
+        <div class="summary">
+          <p>ModAR研究一个很实际的问题：WAM到底应该预测哪种未来。与只生成 RGB 视频不同，它按顺序生成点轨迹、DINO视觉特征、深度等未来模态，再让后续模态和动作预测条件化于前面已经生成的结果。这样既保留几何与语义信息，也避免把大量算力花在对控制未必有帮助的像素细节上。</p>
+          <p>作者从头训练不同 WAM 配置，发现点轨迹、DINO特征和深度比额外预测未来 RGB 更稳定地帮助操作；在相同数据下，ModAR以更少训练 FLOPs超过视频初始化的 Flex-π，并在三项真实双臂任务上优于基线。它给出的启示是，WAM的关键不是“生成得像不像”，而是“哪些未来表示真正能帮助动作决策”。</p>
+        </div>
+        <details>
+          <summary>摘要中文译述</summary>
+          <div>WAM通常联合建模未来观察和动作，但未来观察不一定要只用 RGB 表示。ModAR提出模态自回归生成：模型先逐步去噪并生成多种未来模态，每一种都可以利用之前生成的模态，再预测动作。实验系统比较数据配比、预测模态和 WAM 结构，结果显示点轨迹、DINO特征和深度对 WAM 更有帮助，而未来 RGB 的额外收益不稳定。ModAR从头训练即可达到约75%的观察到的平均成功率，相比同数据上微调的视频初始化 WAM 约72%，训练 FLOPs 约少20倍，并在真实双臂任务上超过基线。</div>
+        </details>
+        <details>
+          <summary>Introduction 中文译述</summary>
+          <div>引言指出，未来观察预测能学习世界动态与语义，但机器人动作所需的信息未必等同于高保真视频。深度更适合几何，预训练特征更适合语义，点轨迹更适合运动；如果这些目标独立生成，后续动作模块又无法利用它们之间的关系。ModAR因此把多模态未来预测安排成有顺序的条件生成，并系统比较“预测什么”和“按什么顺序预测”对 WAM 的影响。</div>
+        </details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">3</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.10915" target="_blank" rel="noopener">IMLE-VLA：用单步动作生成消除 VLA 推理瓶颈</a></h3>
+            <div class="original">IMLE-VLA: Fast Single-Step Action Generation for Vision-Language-Action Policies · 2026-09-10 · Simon Fraser University / University of Pennsylvania</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：VLA / 推理效率</span>
+          <span class="badge good">真机：Franka Emika Panda</span>
+          <span class="badge warn">代码：项目页按钮未提供直接仓库</span>
+        </div>
+        <div class="summary">
+          <p>扩散或 Flow Matching 动作头往往要经过多次采样，导致 VLA 在机器人上出现“看一下、停一下”的节奏。IMLE-VLA保留原有视觉语言骨干，只把十步左右的动作头替换成基于 conditional IMLE 的单步生成器，同时保留多模态动作分布，避免简单回归把多个正确动作平均成一个不可执行的动作。</p>
+          <p>在 π0.5 上，作者报告推理频率从15 Hz提升到55 Hz；LIBERO平均成功率为98.0%，LIBERO-Plus下仍保持鲁棒性。Franka真机四任务中，动作 jerk 降低约2.2至3.0倍，单回合 VLA 推理时间减少约3.9至6.6倍。它直接对应部署痛点，但代码仓库需要用户从项目页进一步确认，不能仅凭“Videos and code available”当作已验证开源。</p>
+        </div>
+        <details>
+          <summary>摘要中文译述</summary>
+          <div>现有 VLA 常用扩散或 Flow Matching 动作头，必须多步采样才能生成一个动作块，推理慢、动作不连续。IMLE-VLA使用 conditional Implicit Maximum Likelihood Estimation 训练单步条件生成器，让它一次前向就覆盖多个可能动作。应用于 π0.5 后，推理频率达到55 Hz，相比15 Hz约提升3.67倍；在40项 LIBERO任务上平均成功率98.0%，并在 LIBERO-Plus扰动测试中保持鲁棒。Franka Panda真机实验显示动作更平滑、任务完成更快。</div>
+        </details>
+        <details>
+          <summary>Introduction 中文译述</summary>
+          <div>引言将 VLA 动作生成分为离散自回归和连续多步采样两类。连续动作头更能表达一个观察对应多个合理动作，但每次推理要反复积分或去噪，硬件执行时会造成延迟。直接回归虽快，却容易把多峰动作分布压成均值。IMLE-VLA的思路是用隐变量与匹配机制保留多模态，再把采样过程压缩为单步生成，从而同时改善动作多样性和闭环频率。</div>
+        </details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">4</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.10706" target="_blank" rel="noopener">HuRo：把人类视频“机器人化”，扩展 VLA 预训练规模</a></h3>
+            <div class="original">HuRo: Robotizing Human Videos for Scalable VLA Pretraining · 2026-09-09 · Yonsei University 等</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：VLA / 数据规模</span>
+          <span class="badge good">代码：<a href="https://github.com/3587jjh/HuRo" target="_blank" rel="noopener">公开仓库</a></span>
+          <span class="badge good">真机：ALLEX 双臂灵巧机器人</span>
+        </div>
+        <div class="summary">
+          <p>HuRo试图解决 VLA 的数据瓶颈：人类第一视角视频很多，但画面中的手和运动轨迹不能直接作为机器人动作。作者用相机、手部和运动重建把异构人类视频转换成目标机器人视角、机器人对齐动作和中间状态，再构建约63万条机器人化 episode、1.42亿帧的数据集。</p>
+          <p>在相同下游微调设置下，机器人化预训练规模扩大后，四项 ALLEX 真机操作的总体完成度从51.5%提升到80.3%，空间和视觉分布外完成度从34.9%提升到72.2%。代码已确认公开，数据集下载仍标注为 coming soon；因此它是今天最符合“代码+真机”硬标准的工作之一。</p>
+        </div>
+        <details>
+          <summary>摘要中文译述</summary>
+          <div>人类视频可以提供大规模、多样化的操作经验，但人类身体与机器人形态不同。HuRo构建了一条机器人化流水线，把异构人类视频转换为机器人对齐的观察和动作轨迹，并推断缺失的中间信号。由此得到约63万条 episode 和1.42亿帧数据。随着机器人化预训练数据规模增加，四项真实操作任务的总体完成度从51.5%提升到80.3%，空间与视觉分布外完成度从34.9%提升到72.2%。消融实验表明，视觉机器人化和动作重定向都对泛化有贡献。</div>
+        </details>
+        <details>
+          <summary>Introduction 中文译述</summary>
+          <div>引言认为，人类视频的主要价值在于数量和行为多样性，但直接用它训练机器人会遭遇 embodiment gap。过去的工作往往只在任务匹配场景中机器人化视频，或只对齐视觉、只对齐动作，尚未充分验证它是否能作为通用 VLA 预训练来源。HuRo的研究问题因此很直接：如果同时把人类观察和动作转换到机器人坐标系，并扩大来源和规模，能否在小规模真机示范微调后提高真实操作与分布外泛化？</div>
+        </details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">5</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.10021" target="_blank" rel="noopener">RoboDrop：用局部梯度兼容性筛选 VLA 后训练数据</a></h3>
+            <div class="original">RoboDrop: Curating VLA Post-Training Data via Local Gradient Compatibility · 2026-09-09 · Tsinghua University / Striding AI</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：VLA / 数据闭环</span>
+          <span class="badge good">真机：ARX 系列机械臂数据</span>
+          <span class="badge warn">代码：论文页未发现直接仓库</span>
+          <span class="badge good">重点高校：清华</span>
+        </div>
+        <div class="summary">
+          <p>后训练数据常混入执行错误、传感器漂移和时间戳错位，但按轨迹长度或最终成败粗筛，容易把“整体成功但局部有问题”的数据留下。RoboDrop在预训练 VLA 的一次 warm-up 中，比较候选样本梯度与任务语义、视觉上下文相近的验证样本梯度，把这种局部兼容性当作数据价值信号。</p>
+          <p>它在受控污染、模拟中的次优示范和真实机器人非专家采集数据上都做了筛选，真实数据上的平均 rollout success 从35.0%提升到67.5%。这是清华团队本周最值得注意的具身成果之一。代码状态未核实，且方法仍依赖一小组干净参考数据，后续需要观察是否能减少人工验证成本。</p>
+        </div>
+        <details>
+          <summary>摘要中文译述</summary>
+          <div>VLA在新任务和新本体上后训练时对数据质量很敏感，采集数据中可能有执行失误、传感器漂移和时间对齐错误。RoboDrop提出沿训练轨迹计算局部梯度兼容性，在一次 warm-up 中把候选样本的梯度与任务语义、视觉上相近的验证样本梯度比较，再按 episode 聚合成筛选分数。实验涵盖受控观测-动作污染、模拟中的次优示范和真实机器人错误数据。筛选后的数据持续带来更强策略，真实机器人平均成功率从35.0%升到67.5%。</div>
+        </details>
+        <details>
+          <summary>Introduction 中文译述</summary>
+          <div>引言指出，数据选择的核心不是寻找“看起来最像”的轨迹，而是估计一条样本对目标任务后训练的实际帮助。全局梯度参考会把不同任务、阶段和视觉上下文混在一起，因而不能准确判断局部错误。RoboDrop使用任务语义和 DINO 视觉相似度检索局部验证参考，再沿训练过程更新分数，使数据价值判断更接近当前策略真正会学到什么。</div>
+        </details>
+      </article>
+    </section>
+
+    <section>
+      <h2>二、AI 领域拓展论文</h2>
+      <p class="section-lead">最多5篇。它们不一定是机器人论文，但能帮助理解智能体、自进化、推理和现实设备闭环。</p>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">1</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.17523" target="_blank" rel="noopener">ScienceBuddy：递归中的递归，自我改进科学智能体</a></h3>
+            <div class="original">ScienceBuddy: Recursive-in-Recursive Self-Improvement for Interactive Scientific Agents · 2026-09-15</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">代码：<a href="https://github.com/Gen-Verse/ScienceBuddy-RSI" target="_blank" rel="noopener">公开仓库</a></span>
+          <span class="badge good">现实交互：科研工作台</span>
+          <span class="badge warn">真机：不适用</span>
+        </div>
+        <div class="summary">
+          <p>ScienceBuddy把科研智能体做成一个可持续改进的工作空间：模型完成任务、收集用户反馈和执行证据，再把这些反馈转成新的任务与评测规则。它的“递归中的递归”包含两层：内层改进智能体的工具编排和工作流，外层在改进后的工作流上训练模型。</p>
+          <p>这与用户正在搭建的每日 paper loop 很接近：真正可积累的不是一条更长 prompt，而是任务、反馈、评测和工具链的共同演化。论文目前更像系统/研究产品展示，代码已公开，但不应把它的自我改进说成已经实现通用递归自我提升。</p>
+        </div>
+        <details><summary>摘要中文译述</summary><div>作者发布 ScienceBuddy，一个面向研究者日常工作的交互式科研空间。系统把用户请求、反馈和执行证据转换为持续学习所需的任务与评测量规。内层递归在模型固定时改进智能体工作流，外层递归再利用改进后的工作流训练模型。论文通过科研任务案例展示工作流改进、模型学习和人机协作，并公开代码。</div></details>
+        <details><summary>Introduction 中文译述</summary><div>引言的中心观点是，科研智能体的能力不只取决于基础模型，还取决于工具、任务分解、证据记录和评测方式。若工作流可以从失败轨迹中改进，模型又能在更好的工作流上获得更有价值的训练经验，二者就会形成相互促进的闭环。ScienceBuddy把这件事做成可观察、可复用的科研产品。</div></details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">2</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.15364" target="_blank" rel="noopener">RSIAgent：在新环境中自主探索的递归自我改进</a></h3>
+            <div class="original">RSIAgent: Autonomous Exploration for Recursive Self-improvement in New Environments · 2026-09-14</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：智能体 / 自进化</span>
+          <span class="badge warn">代码：论文页未列仓库</span>
+          <span class="badge warn">现实性：OSWorld 数字环境</span>
+        </div>
+        <div class="summary">
+          <p>RSIAgent不更新模型参数，而是让课程、执行和验证三个智能体在新环境中反复探索，把动作、条件与结果之间的可复用因果关系写入环境记忆。它先广泛探索环境结构，再针对难例、边界条件和隐藏约束做深挖，最终把冻结的记忆直接复用于后续任务。</p>
+          <p>这给“自进化”提供了一个较务实的定义：先改变外部记忆和探索策略，再谈模型权重更新。论文在 OSWorld-v2 和 Agent's Last Exam 上报告了对开源模型的提升，但目前是数字环境实验，代码也未在论文页面直接确认。</p>
+        </div>
+        <details><summary>摘要中文译述</summary><div>数字智能体经常进入预训练模型未覆盖的新环境。RSIAgent提出无需训练的多智能体递归自我改进框架，由课程、执行和验证智能体协作探索环境、验证结果并保存环境特定知识，包括动作、条件和后果之间的因果关系。框架采用先广后深的探索策略，生成可冻结并复用的环境记忆。作者在 OSWorld-v2 和 Agent's Last Exam 上展示了对若干开源模型的提升。</div></details>
+        <details><summary>Introduction 中文译述</summary><div>引言把适应新环境看成知识获取问题：预训练模型不知道每个新工具、界面和失败模式，单纯依靠在线试错又成本高。RSIAgent的关键是把探索本身组织成可以积累的记忆构建过程，让验证器筛掉错误经验，让广度探索发现环境结构、深度探索补足长尾约束。</div></details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">3</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.14858" target="_blank" rel="noopener">Dream-RSI：在演化世界中递归改进探索策略</a></h3>
+            <div class="original">Dream-RSI: Recursive Self-Improvement through Evolving Worlds · 2026-09-14</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：自进化 / 搜索</span>
+          <span class="badge warn">代码：未核实</span>
+          <span class="badge warn">现实性：数字任务</span>
+        </div>
+        <div class="summary">
+          <p>Dream-RSI关注递归自我改进中最容易被忽视的部分：探索策略本身如何变好。它把历史发现树当成一个可回放的搜索模拟器，在离线“做梦”阶段低成本评估不同探索策略，再把改进后的策略部署回线上继续发现新解。</p>
+          <p>这个结构很适合迁移到机器人数据闭环：把失败类型、恢复路径和验证结果保存成可回放的经验树，可以先在离线世界里优化数据采样，再把更有效的采样策略送回真机。当前论文仍是算法工程、数学优化和 GPU kernel 等数字任务验证，不能直接当作实体机器人自进化证据。</p>
+        </div>
+        <details><summary>摘要中文译述</summary><div>Dream-RSI提出一种可扩展的递归自我改进探索框架。它把累计的发现历史视为已实现搜索空间的回放模拟器，通过离线梦境式探索得到即时、低成本的反馈，用于评估和改进探索策略，然后把改进策略重新部署到线上发现过程中，持续扩展模拟器池。作者在算法工程、数学优化和 GPU kernel 工程中报告了有竞争力或更好的发现质量，并降低了若干场景的发现成本。</div></details>
+        <details><summary>Introduction 中文译述</summary><div>引言认为，固定探索策略无法适应搜索空间增长，而在线策略优化又面临长周期、昂贵反馈和巨大的元搜索空间。历史搜索树提供了一种折中：它不是虚构一个完全开放的世界，而是回放已经发生过的分支，在接近真实任务分布的空间中训练探索策略。</div></details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">4</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.11699" target="_blank" rel="noopener">Negative Self-Distillation：通过避开缺陷学习推理</a></h3>
+            <div class="original">Negative Self-Distillation: Learning to Reason by Avoiding Flaws · 2026-09-10</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：LLM 后训练 / 自我改进</span>
+          <span class="badge warn">代码：未核实</span>
+          <span class="badge warn">真机：不适用</span>
+        </div>
+        <div class="summary">
+          <p>很多自蒸馏方法让学生模型模仿带有特权信息的“好答案”，但这种做法可能让模型过度自信，压制探索和自我纠错。Negative Self-Distillation反过来让模型生成一个“粗心推理者”作为负面教师，引导学生远离自身容易犯的推理缺陷。</p>
+          <p>作者还用动态门控只惩罚推理关键 token，避免把普通语言能力一起破坏。它对具身自进化的启发是：改进信号不一定要是完整正确轨迹，也可以来自可定位的失败模式；但论文主要是语言推理实验，不能直接外推到机器人控制。</p>
+        </div>
+        <details><summary>摘要中文译述</summary><div>传统 on-policy self-distillation 可能把教师在特权信息条件下生成的过度自信推理传给学生，降低复杂任务所需的不确定性表达和自我纠错。本文提出 NSD，让模型生成问题相关的负面条件，例如粗心推理者，再让学生分布远离这种缺陷教师。动态门控机制定位推理关键 token，只对行为缺陷施加更新，保护基础语言能力。实验显示 NSD 优于若干自蒸馏和无标签自举 RL 基线。</div></details>
+        <details><summary>Introduction 中文译述</summary><div>引言的反直觉之处是：自我改进不总是“模仿更好的自己”，也可以是“明确避开更坏的自己”。如果错误推理的 token 与普通语言 token 混在一起，直接做负向训练会伤害语言能力，因此需要把行为层面的缺陷和语言层面的通用模式分开。</div></details>
+      </article>
+
+      <article class="paper">
+        <div class="paper-head">
+          <div class="num">5</div>
+          <div class="paper-title">
+            <h3><a href="https://arxiv.org/abs/2609.12394" target="_blank" rel="noopener">BlueLM-GUI：以真实设备为中心的移动 GUI 自进化飞轮</a></h3>
+            <div class="original">BlueLM-GUI Technical Report: A Real-Device-Centric Flywheel for Self-Improving Mobile GUI Agents · 2026-09-11</div>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge good">方向：现实设备闭环 / 智能体</span>
+          <span class="badge good">现实设备：数百部真实手机</span>
+          <span class="badge warn">代码：论文页未列仓库</span>
+        </div>
+        <div class="summary">
+          <p>BlueLM-GUI把训练、评测和数据路由都放到真实手机上，试图解决模拟器与生产环境的分布差异。它不丢弃失败轨迹，而是把成功轨迹进入监督池，把失败轨迹送入错误修复与反事实推导模块，再由新一轮真实设备探索验证。</p>
+          <p>这份技术报告最有价值的地方不是某个单点模型分数，而是把“每个样本都产生价值、每次 rollout 都来自真实环境、基准随能力演化”写成了工程闭环。它和机器人数据工厂、RoboDrop、XPACE形成了同一趋势：数据生产、失败归因、恢复训练和评测正在合并成系统能力。</p>
+        </div>
+        <details><summary>摘要中文译述</summary><div>BlueLM-GUI是一份关于35B-A3B移动 GUI 智能体的技术报告。系统通过三条原则建立真实设备飞轮：每个样本都被利用，成功和失败轨迹分别路由到监督或错误修复模块；每次 rollout 都在真实手机和真实应用中执行；每个查询都通过配额和多维指标进入可持续演化的基准。报告声称在 MobileGUI-VBench 和 AndroidWorld 上达到较强成绩，并强调真实设备分布与失败数据再利用的重要性。</div></details>
+        <details><summary>Introduction 中文译述</summary><div>引言把 GUI 智能体的工业部署缺口归纳为训练分布不真实、昂贵失败没有被充分利用、固定基准会饱和。BlueLM-GUI的解决办法不是只扩大模型，而是让真实设备成为数据源，把失败变成纠错或任务生成信号，并让评测配额随着模型能力移动。这个“环境—数据—评测—策略”的闭环与具身智能的真机自进化路线高度同构。</div></details>
+      </article>
+    </section>
+
+    <section>
+      <h2>三、最新 News</h2>
+      <p class="section-lead">新闻栏强调“发生了什么”和“为什么值得知道”，不把新闻标题当作技术结论。</p>
+
+      <article class="news">
+        <div class="news-title"><h3>英伟达把算力叙事改成 tokens/W</h3><span class="date">2026-09-15</span></div>
+        <p>NVIDIA近期围绕 Vera Rubin、数据中心系统和“每瓦特产生多少 token”集中对外沟通，信号是基础设施竞争正在从单卡峰值转向整机、互联、推理吞吐和能源效率的共同优化。对具身智能而言，这直接关系到 VLA 是部署在机器人端、边缘服务器，还是由多机器人共享的推理集群。</p>
+        <p><a href="https://blogs.nvidia.com/blog/" target="_blank" rel="noopener">NVIDIA Newsroom</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>CUDA-Q继续向容错量子计算开放</h3><span class="date">2026-09-14</span></div>
+        <p>NVIDIA新闻页本周突出开源 CUDA-Q 容错量子计算平台。它未必会立刻改变大模型训练，但体现了 NVIDIA 正在把软件栈从 GPU 加速扩展为更宽的计算平台，长期看会影响 AI 训练、科学计算和智能体工具链的边界。</p>
+        <p><a href="https://blogs.nvidia.com/blog/" target="_blank" rel="noopener">NVIDIA Newsroom</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>Skild AI展示“一段视频教会机器人”</h3><span class="date">2026-09-10</span></div>
+        <p>NVIDIA官方新闻介绍 Skild AI 使用 Physical AI 全栈平台，从单个视频示范中学习新机器人任务。值得关注的不是“单视频”宣传语本身，而是数据获取正在向视频理解、动作重定向和跨本体策略迁移靠拢，这与本期 HuRo 的学术路线形成呼应。</p>
+        <p><a href="https://blogs.nvidia.com/blog/" target="_blank" rel="noopener">NVIDIA Newsroom</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>OpenAI发布 Agents API</h3><span class="date">2026-09-10</span></div>
+        <p>OpenAI官方更新列表显示 Agents API 在本周发布，重点是把多步骤工具调用、状态管理和智能体执行从应用层拼装推进到平台层。对每日 paper loop 的启发是：检索、证据核验、写作、落盘和回顾可以拆成可观测的 agent workflow，而不是一次性长提示词。</p>
+        <p><a href="https://openai.com/index/" target="_blank" rel="noopener">OpenAI News</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>OpenAI推出 GPT-Live-1 API</h3><span class="date">2026-09-10</span></div>
+        <p>OpenAI本周更新列表还列出 GPT-Live-1 API，方向上继续强化实时交互能力。实时多模态模型一旦与工具、设备和长期状态结合，就会把“会回答”推进到“持续观察—行动—修正”的系统问题，这也是具身模型和 GUI agent共同面对的接口。</p>
+        <p><a href="https://openai.com/index/" target="_blank" rel="noopener">OpenAI News</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>ChatGPT基础设施开始按十亿用户设计</h3><span class="date">2026-09-11</span></div>
+        <p>OpenAI官方更新列表显示“Scaling Storage for 1 Billion ChatGPT Users”。这类消息的价值在于提醒我们，大模型前沿不仅是模型结构和 benchmark，也包括存储、检索、日志、状态和成本控制；未来的智能体产品会越来越像持续运行的基础设施。</p>
+        <p><a href="https://openai.com/index/" target="_blank" rel="noopener">OpenAI News</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>Anthropic发布威胁情报报告</h3><span class="date">2026-09-10</span></div>
+        <p>Anthropic本周发布 Threat Intelligence Report，关注模型被用于网络攻击、滥用和安全防护的现实案例。对具身智能的关系在于：当模型获得工具和物理执行权限后，安全评测不能只看回答内容，还要看权限、动作边界、可回滚性和异常恢复。</p>
+        <p><a href="https://www.anthropic.com/news" target="_blank" rel="noopener">Anthropic News</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>阿里云持续推进 Qwen 的多模态路线</h3><span class="date">本周官网更新窗口</span></div>
+        <p>阿里云博客近期的 Qwen-Drive-1.0 和 QwenCloud 更新显示，Qwen路线不只在聊天模型，也在向驾驶、视觉语言基础模型和企业级工作流扩展。需要注意：Qwen-Robot Suite 的公开页面日期是2026年6月15日，不应误写成9月新发布；本期只把近期官网更新作为生态动向。</p>
+        <p><a href="https://www.alibabacloud.com/blog" target="_blank" rel="noopener">Alibaba Cloud Blog</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>AI数据中心的公众接受度成为新变量</h3><span class="date">2026-09-16附近</span></div>
+        <p>主流科技媒体近期集中讨论数据中心能耗、地方社区反对和公众对 AI 基础设施的接受度。它会反过来影响模型规模化的真实上限：算力、能源、用水、许可和社会信任都可能成为训练与部署的约束，而不是单纯的工程预算。</p>
+        <p><a href="https://www.theverge.com/ai-artificial-intelligence/995917/data-center-nyt-midterm-poll-september" target="_blank" rel="noopener">The Verge：AI 与数据中心的公众态度</a></p>
+      </article>
+
+      <article class="news">
+        <div class="news-title"><h3>社区开始讨论“大厂放慢 AI”</h3><span class="date">2026-09-16附近</span></div>
+        <p>围绕安全协定、反垄断和“大厂是否会放慢 AI”的讨论升温。它未必代表行业真的减速，但说明前沿竞争的评价函数正在变复杂：模型能力、商业化速度、能源消耗、风险治理和市场结构会同时进入公众视野。</p>
+        <p><a href="https://www.theverge.com/ai-artificial-intelligence/995186/is-big-techs-ai-slowdown-a-safety-pact-or-a-cartel" target="_blank" rel="noopener">The Verge：AI 放缓、安全协定与竞争讨论</a></p>
+      </article>
+    </section>
+
+    <div class="note">
+      <strong>重点对象核验备注：</strong>
+      本期已重点检查清华/Striding AI 的 RoboDrop、清华/全球高校的近期 arXiv 机器人条目，以及 OpenAI、NVIDIA、Anthropic、阿里云公开新闻页。未在本次近一周窗口中找到可独立核验、且与本主题直接相关的华为、腾讯、字节、小米、美的、比亚迪、DeepSeek、Google DeepMind、Tesla、Amazon，以及 Unitree、AgiBot、Galbot、Galaxea、X Square、Physical Intelligence、Skild AI、Figure AI、1X 等重点机器人公司的新技术报告；附件中的部署、融资和未来计划均未直接当作本期事实。清华 IIIS 赵行、上交穆尧组也未检出可确认的相关新论文，后续每日继续按中英文作者名和实验室页面复查。
+    </div>
+
+    <footer>
+      <p>来源类型：arXiv 原始论文页与 API、作者项目页、GitHub 仓库、企业官方新闻页、主流科技媒体。论文中的数字均为作者/项目页公开结果，阅读时请以论文正文、代码和复现实验为准。</p>
+      <p>本页为2026年9月16日首期报告。定时生成规范见 <a href="../code/prompt.md">code/prompt.md</a>，候选抓取脚本见 <a href="../code/generate_report.py">code/generate_report.py</a>。</p>
+    </footer>
+  </main>
+</body>
+</html>
