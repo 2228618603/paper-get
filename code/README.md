@@ -33,13 +33,13 @@ python3 code/generate_report.py --date 2026-09-16 --days 7 --output-root .
 python3 code/render_report_from_packet.py --date 2026-09-16 --root .
 ```
 
-如果摘要翻译缓存中有“待补”句子，可单独运行：
+如果摘要翻译缓存或最终 HTML 中有“待补”句子，可单独运行：
 
 ```bash
-python3 code/translate_abstracts.py --date 2026-09-16 --root . --max-sentences 40
+python3 code/translate_abstracts.py --date 2026-09-16 --root . --source html --all --sleep 1.2
 ```
 
-该脚本会把结果写入 `YYYY-MM/abstract-translations-YYYY-MM-DD.json`。公共翻译服务可能限流，因此脚本支持多次断点续跑。
+该脚本会直接扫描当天最终 HTML 的“摘要逐句对照翻译”折叠块，补齐中文翻译；如果英文仍是占位句，会尝试按 arXiv 链接重新抓取真实摘要再翻译。公共翻译服务可能限流，因此脚本支持多次断点续跑。若由本地 renderer 生成，也可以用 `--source both --all` 同步 `YYYY-MM/abstract-translations-YYYY-MM-DD.json` 缓存。
 
 ## 自动运行
 
@@ -52,7 +52,7 @@ python3 code/translate_abstracts.py --date 2026-09-16 --root . --max-sentences 4
 5. 先分别整理三部分：与你课题强相关的论文、扩展补充论文、News，再合并成 HTML；
 6. 强相关论文最多 30 篇，扩展补充论文最多 10 篇，News 最多 20 条，但不强行填满；
 7. 对每篇论文标注研究机构/团队、机构简介、代码状态、真机状态、实验设置和编辑评述；一作/通讯背调只作为后台排序依据，不在页面展示；
-8. 每篇论文只保留摘要折叠块，摘要需保留英文原句并做中文逐句对照；翻译缓存不足时明确标注待补，不得用概括译述冒充逐句翻译；不再翻译 Introduction；
+8. 每篇论文只保留摘要折叠块，摘要需保留英文原句并做中文逐句对照；正文 HTML 生成后必须再运行 `translate_abstracts.py --source html --all` 做最终修补与校验；翻译缓存不足时明确标注待补，不得用概括译述冒充逐句翻译；不再翻译 Introduction；
 9. 生成 `YYYY-MM/YYYY-MM-DD-风向总结.html`；
 10. 更新当前月去重日志。
 
