@@ -6,7 +6,7 @@
 
 - `prompt.md`：给检索与写作代理的完整任务规范。
 - `sources.json`：企业、实验室、关键词和优先级配置。
-- `generate_report.py`：抓取近一周 arXiv 元数据并生成候选论文包；可作为每日任务的第一步。
+- `generate_report.py`：以 Hugging Face Papers API 为主、arXiv API 为补充，抓取近一周论文元数据、HF 热度、项目页/GitHub 线索、企业官网索引，并生成候选论文包；可作为每日任务的第一步。
 - `render_report_from_packet.py`：把候选包和人工核验后的排序规则渲染成 HTML，并维护当月去重日志。
 - `translate_abstracts.py`：逐句补全摘要中文翻译缓存；可断点续跑，避免翻译服务阻塞日报生成。
 - `YYYY-MM/seen-YYYY-MM.md`：当前月份的去重日志；每日只读写当月文件，避免重复报道。
@@ -16,16 +16,23 @@
 在本目录的上一级执行：
 
 ```bash
-python3 code/generate_report.py --output-root .
+python3 code/generate_report.py --output-root . --use-hf-mirror
 ```
 
 也可以固定报告日期：
 
 ```bash
-python3 code/generate_report.py --date 2026-09-16 --days 7 --output-root .
+python3 code/generate_report.py --date 2026-09-17 --days 7 --limit 200 --output-root . --use-hf-mirror
 ```
 
-脚本会把候选论文包写入对应月份目录的 `research-packet-YYYY-MM-DD.json`。最终 HTML 仍需经过网页、项目页、代码仓库、作者背景和真机证据核验后生成。
+脚本会把候选论文包写入对应月份目录的 `research-packet-YYYY-MM-DD.json`。候选包里：
+
+- `paper_candidates`：HF-first 的主候选列表，已按相关性、HF 热度、代码/项目页线索、真机关键词、硬性关注对象和新鲜度做粗排。
+- `arxiv_candidates`：兼容旧渲染器/翻译器的同一候选列表。
+- `official_news_candidates`：企业官网首页/新闻页的快速索引线索，用于后续网页核验。
+- `source_health` / `source_errors`：当天数据源健康度与失败原因，低数量日报必须先看这里。
+
+最终 HTML 仍需经过网页、项目页、代码仓库、作者背景和真机证据核验后生成，不能把候选包里的粗筛标签直接当最终结论。
 
 当前版本也提供一个本地渲染器，可用于把已经核验/排序后的候选包输出为 HTML：
 
@@ -65,9 +72,9 @@ uv pip install --python .venv/bin/python -r requirements-local-translation.txt
 
 1. 读取 `sources.json`；
 2. 读取或创建 `YYYY-MM/seen-YYYY-MM.md`，用于本月去重；
-3. 运行 `generate_report.py` 获取 arXiv 候选；
-4. 先检查候选包健康度；若出现 arXiv 429/timeout、候选数量异常偏低或正文数量异常偏低，必须重试并换用网页/RSS/Semantic Scholar/Papers with Code/Hugging Face/机构官网等 fallback 补抓，不能直接交付低数量报告；
-5. 使用网页检索核验近 7 天新闻、企业官网、实验室主页、作者背景、项目页、代码仓库和真机证据；
+3. 运行 `generate_report.py --use-hf-mirror` 获取 HF-first 候选；
+4. 先检查候选包健康度；若出现 HF Daily Papers、HF search、arXiv 429/timeout、候选数量异常偏低或正文数量异常偏低，必须重试并换用 hf-mirror、网页/RSS/Semantic Scholar/Papers with Code/机构官网等 fallback 补抓，不能直接交付低数量报告；
+5. 使用网页检索核验近 7 天新闻、企业官网、实验室主页、作者背景、项目页、代码仓库、Hugging Face 模型/数据集/Spaces 和真机证据；
 6. 先分别整理三部分：与你课题强相关的论文、扩展补充论文、News，再合并成 HTML；
 7. 强相关论文最多 30 篇，扩展补充论文最多 10 篇，News 最多 20 条，但不强行填满；
 8. 对每篇论文标注研究机构/团队、机构简介、代码状态、真机状态、实验设置和编辑评述；一作/通讯背调只作为后台排序依据，不在页面展示；

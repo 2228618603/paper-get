@@ -8,7 +8,8 @@
 
 - 报告日期使用 `Asia/Shanghai`。
 - 检索近 7 个自然日，优先近 3 个自然日。
-- arXiv 至少检索 `cs.RO`、`cs.AI`、`cs.LG`，必要时补充 `cs.CV`、`cs.CL`、`cs.HC`、`eess.SY` 中与具身智能强相关的条目。
+- 论文发现以 Hugging Face Papers API 为第一入口：逐日读取 Daily Papers，并按 `sources.json` 中的 HF search queries 检索；arXiv API 用于补充、交叉验证和摘要元数据兜底。
+- arXiv 至少检索 `cs.RO`、`cs.AI`、`cs.LG`，同时补充 `cs.CV`、`cs.CL`、`cs.HC`、`eess.SY` 中与具身智能强相关的条目。
 - 新闻必须尽量使用报道发生日或官网发布时间；如果只有网页当前列表日期，明确写“官网列表显示”。
 
 ## 每月去重日志
@@ -34,10 +35,11 @@
 ## 每日执行步骤
 
 1. 读取 `YYYY-MM/seen-YYYY-MM.md` 做本月去重；不存在则创建。
-2. 运行 `python3 code/generate_report.py --days 7 --limit 160 --output-root .` 生成当日 arXiv 候选包。
-3. 对候选包做健康检查：若任一核心 arXiv 类别出现 `HTTP 429`、timeout、空结果，或候选总数明显异常（例如少于 80 条、近三天候选少于 20 条、强相关关键词命中少于 15 条、与前一日相比下降超过 50%），不得直接进入低数量 fallback。必须先等待 60-180 秒后重试至少 2 轮；仍失败时改用 arXiv abs/search 网页、RSS、Semantic Scholar、Papers with Code、Hugging Face Papers、机构/企业官网和通用网页搜索补抓，并在 HTML 页尾写明降级原因、重试次数和最终候选数量。
+2. 运行 `python3 code/generate_report.py --days 7 --limit 200 --output-root . --use-hf-mirror` 生成当日 HF-first 候选包。候选包中的 `paper_candidates` 是主输入，`arxiv_candidates` 为兼容旧渲染/翻译脚本保留；`official_news_candidates` 是企业官网快速索引线索。
+3. 对候选包做健康检查：若 HF Daily Papers、HF search 或核心 arXiv 类别出现 `HTTP 429`、timeout、空结果，或候选总数明显异常（例如少于 80 条、近三天候选少于 20 条、强相关关键词命中少于 15 条、与前一日相比下降超过 50%），不得直接进入低数量 fallback。必须先等待 60-180 秒后重试至少 2 轮；仍失败时改用 hf-mirror、arXiv abs/search 网页、RSS、Semantic Scholar、Papers with Code、机构/企业官网和通用网页搜索补抓，并在 HTML 页尾写明降级原因、重试次数和最终候选数量。
 4. fallback 结果必须再审查：读取当月去重日志后，统计去重后新增候选数量与高相关候选数量。若去重后仍有 10 篇以上高相关候选，却最终正文少于 10 篇，必须继续核验和扩充；若确实少于 10 篇，需在页尾说明“经重试和去重后高价值新增不足”的依据。
-5. 用网页检索分别核验：arXiv 页面、论文 PDF/项目页、GitHub/GitLab/Hugging Face、作者主页/实验室主页、企业官方新闻页、主流媒体、社区讨论。
+5. 用网页检索分别核验：HF paper page、arXiv 页面、论文 PDF/项目页、GitHub/GitLab/Hugging Face 模型/数据集/Spaces、作者主页/实验室主页、企业官方新闻页、主流媒体、社区讨论。
+   - 若 `official_news_candidates` 中 OpenAI、Tesla 等页面因 403/反爬失败，不得写成“无更新”；必须改用浏览器检索、官网可访问新闻页、主流媒体和公司社媒/博客交叉核验。
 6. 对 `sources.json` 中硬性对象逐项搜索近 7 天结果；近 3 天结果权重最高。
 7. 先分别整理三份内容草稿：与你课题强相关的论文、扩展补充论文、News；再合并成一个 HTML。若高价值候选不足，不强行凑满上限，但必须给出经过重试、去重和质量审查后的理由。
 8. 先生成正文 HTML，再优先运行 `.venv/bin/python code/translate_abstracts.py --date YYYY-MM-DD --root . --source html --translator local --all --sleep 0` 对最终 HTML 做一次本地离线摘要逐句修补和翻译。若本地环境不存在，先执行 `uv venv .venv --python 3.11`、`uv pip install --python .venv/bin/python -r requirements-local-translation.txt`、`.venv/bin/python code/setup_local_translator.py` 下载模型；临时兜底才使用 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source html --translator auto --all --sleep 1.2`。若报告由本地 renderer 生成，也可以追加运行 `--source both` 同步翻译缓存。公共翻译服务限流时允许分批重跑，但 07:00 前交付版本必须明确显示仍未补齐的句子，不能用概括译述冒充逐句翻译。

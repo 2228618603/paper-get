@@ -1,6 +1,32 @@
 {
   "timezone": "Asia/Shanghai",
-  "arxiv_categories": ["cs.RO", "cs.AI", "cs.LG"],
+  "arxiv_categories": ["cs.RO", "cs.AI", "cs.LG", "cs.CV", "cs.CL", "cs.HC", "eess.SY"],
+  "huggingface": {
+    "api_base": "https://huggingface.co",
+    "mirror_api_base": "https://hf-mirror.com",
+    "daily_endpoint": "/api/daily_papers",
+    "search_endpoint": "/api/papers/search",
+    "search_queries": [
+      "vision-language-action robot",
+      "VLA robot foundation model",
+      "world action model robot",
+      "WAM embodied intelligence",
+      "robot foundation model real robot",
+      "embodied AI self improvement",
+      "self-evolving agent robot",
+      "robot data factory",
+      "humanoid whole-body manipulation",
+      "mobile manipulation memory",
+      "latent action robot",
+      "human video robot learning",
+      "tactile dexterous manipulation",
+      "force control robot learning",
+      "teleoperation robot dataset",
+      "robot simulation benchmark",
+      "real-time VLA inference",
+      "embodied world model"
+    ]
+  },
   "keywords": [
     "vision-language-action",
     "world-action",
@@ -89,13 +115,13 @@
   ],
   "official_news_pages": [
     "https://openai.com/index/",
-    "https://blogs.nvidia.com/blog/",
+    "https://blogs.nvidia.com/",
     "https://www.anthropic.com/news",
     "https://www.alibabacloud.com/blog",
     "https://qwenlm.github.io/blog/",
     "https://deepmind.google/discover/blog/",
     "https://www.huawei.com/en/news",
-    "https://www.tencent.com/en-us/articles",
+    "https://www.tencent.com/en-us/media/news.html",
     "https://www.bytedance.com/en/news",
     "https://www.mi.com/global/discover/",
     "https://www.amazon.science/",
@@ -103,8 +129,8 @@
     "https://github.com/deepseek-ai",
     "https://www.unitree.com/",
     "https://www.physicalintelligence.company/blog",
-    "https://www.skild.ai/blog",
+    "https://www.skild.ai/blogs",
     "https://www.figure.ai/news",
-    "https://www.1x.tech/news"
+    "https://www.1x.tech/discover"
   ]
 }
