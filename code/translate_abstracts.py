@@ -75,6 +75,28 @@ def chunk_sentence(sentence: str, limit: int = MAX_TRANSLATION_CHARS) -> list[st
 
 
 def translate_short(text: str, timeout: int) -> str:
+    google_error: Exception | None = None
+    try:
+        response = requests.get(
+            "https://translate.googleapis.com/translate_a/single",
+            params={
+                "client": "gtx",
+                "sl": "en",
+                "tl": "zh-CN",
+                "dt": "t",
+                "q": text,
+            },
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        data = response.json()
+        translated = "".join(part[0] for part in data[0] if part and part[0]).strip()
+        if translated and not is_pending(translated):
+            return translated
+        raise RuntimeError("empty or invalid google translation")
+    except Exception as exc:
+        google_error = exc
+
     response = requests.get(
         "https://api.mymemory.translated.net/get",
         params={"q": text, "langpair": "en|zh-CN"},
@@ -87,7 +109,7 @@ def translate_short(text: str, timeout: int) -> str:
     if status and int(status) >= 400:
         raise RuntimeError(data.get("responseDetails") or f"translation status {status}")
     if (not translated) or is_pending(translated):
-        raise RuntimeError("empty or invalid translation")
+        raise RuntimeError(f"empty or invalid translation; google fallback failed: {google_error}")
     return translated
 
 
@@ -281,6 +303,8 @@ def translate_html(args: argparse.Namespace, root: Path) -> dict:
                         )
                     pairs = detail_body.select(".abstract-pair")
                     changed = True
+                    if not args.dry_run:
+                        html_path.write_text(str(soup), encoding="utf-8")
                     print(f"html repaired abstract {aid}: {len(english_sentences)} sentences")
                     time.sleep(args.sleep)
                 except Exception as exc:
@@ -308,6 +332,8 @@ def translate_html(args: argparse.Namespace, root: Path) -> dict:
                 set_labeled_text(soup, divs[1], label_text, zh)
                 translated_count += 1
                 changed = True
+                if not args.dry_run:
+                    html_path.write_text(str(soup), encoding="utf-8")
                 print(f"html translated #{translated_count}: {zh[:80]}")
             except Exception as exc:
                 failed_count += 1

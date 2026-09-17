@@ -35,12 +35,14 @@
 
 1. 读取 `YYYY-MM/seen-YYYY-MM.md` 做本月去重；不存在则创建。
 2. 运行 `python3 code/generate_report.py --days 7 --limit 160 --output-root .` 生成当日 arXiv 候选包。
-3. 用网页检索分别核验：arXiv 页面、论文 PDF/项目页、GitHub/GitLab/Hugging Face、作者主页/实验室主页、企业官方新闻页、主流媒体、社区讨论。
-4. 对 `sources.json` 中硬性对象逐项搜索近 7 天结果；近 3 天结果权重最高。
-5. 先分别整理三份内容草稿：与你课题强相关的论文、扩展补充论文、News；再合并成一个 HTML。若高价值候选不足，不强行凑满上限。
-6. 先生成正文 HTML，再运行 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source html --all --sleep 1.2` 对最终 HTML 做一次全量摘要逐句修补和翻译。若报告由本地 renderer 生成，也可以追加运行 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source both --all --sleep 1.2` 同步翻译缓存。公共翻译服务限流时允许分批重跑，但 07:00 前交付版本必须明确显示仍未补齐的句子，不能用概括译述冒充逐句翻译。
-7. 写完后检查 HTML 存在、UTF-8 可读、强相关和补充两个论文板块计数正确、强相关不超过 30 篇、补充不超过 10 篇、News 不超上限、每篇论文只有摘要折叠块且没有 Introduction 翻译块、外链格式正确，并确认页面中不含“中文逐句翻译待补”“Abstract sentence to be verified”等占位文本。
-8. 追加更新当月 `seen-YYYY-MM.md`。
+3. 对候选包做健康检查：若任一核心 arXiv 类别出现 `HTTP 429`、timeout、空结果，或候选总数明显异常（例如少于 80 条、近三天候选少于 20 条、强相关关键词命中少于 15 条、与前一日相比下降超过 50%），不得直接进入低数量 fallback。必须先等待 60-180 秒后重试至少 2 轮；仍失败时改用 arXiv abs/search 网页、RSS、Semantic Scholar、Papers with Code、Hugging Face Papers、机构/企业官网和通用网页搜索补抓，并在 HTML 页尾写明降级原因、重试次数和最终候选数量。
+4. fallback 结果必须再审查：读取当月去重日志后，统计去重后新增候选数量与高相关候选数量。若去重后仍有 10 篇以上高相关候选，却最终正文少于 10 篇，必须继续核验和扩充；若确实少于 10 篇，需在页尾说明“经重试和去重后高价值新增不足”的依据。
+5. 用网页检索分别核验：arXiv 页面、论文 PDF/项目页、GitHub/GitLab/Hugging Face、作者主页/实验室主页、企业官方新闻页、主流媒体、社区讨论。
+6. 对 `sources.json` 中硬性对象逐项搜索近 7 天结果；近 3 天结果权重最高。
+7. 先分别整理三份内容草稿：与你课题强相关的论文、扩展补充论文、News；再合并成一个 HTML。若高价值候选不足，不强行凑满上限，但必须给出经过重试、去重和质量审查后的理由。
+8. 先生成正文 HTML，再运行 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source html --all --sleep 1.2` 对最终 HTML 做一次全量摘要逐句修补和翻译。若报告由本地 renderer 生成，也可以追加运行 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source both --all --sleep 1.2` 同步翻译缓存。公共翻译服务限流时允许分批重跑，但 07:00 前交付版本必须明确显示仍未补齐的句子，不能用概括译述冒充逐句翻译。
+9. 写完后检查 HTML 存在、UTF-8 可读、强相关和补充两个论文板块计数正确、强相关不超过 30 篇、补充不超过 10 篇、News 不超上限、每篇论文只有摘要折叠块且没有 Introduction 翻译块、外链格式正确，并确认页面中不含“中文逐句翻译待补”“Abstract sentence to be verified”等占位文本。
+10. 追加更新当月 `seen-YYYY-MM.md`。
 
 ## 论文栏目与数量
 
