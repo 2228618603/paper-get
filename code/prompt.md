@@ -40,7 +40,7 @@
 5. 用网页检索分别核验：arXiv 页面、论文 PDF/项目页、GitHub/GitLab/Hugging Face、作者主页/实验室主页、企业官方新闻页、主流媒体、社区讨论。
 6. 对 `sources.json` 中硬性对象逐项搜索近 7 天结果；近 3 天结果权重最高。
 7. 先分别整理三份内容草稿：与你课题强相关的论文、扩展补充论文、News；再合并成一个 HTML。若高价值候选不足，不强行凑满上限，但必须给出经过重试、去重和质量审查后的理由。
-8. 先生成正文 HTML，再运行 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source html --all --sleep 1.2` 对最终 HTML 做一次全量摘要逐句修补和翻译。若报告由本地 renderer 生成，也可以追加运行 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source both --all --sleep 1.2` 同步翻译缓存。公共翻译服务限流时允许分批重跑，但 07:00 前交付版本必须明确显示仍未补齐的句子，不能用概括译述冒充逐句翻译。
+8. 先生成正文 HTML，再优先运行 `.venv/bin/python code/translate_abstracts.py --date YYYY-MM-DD --root . --source html --translator local --all --sleep 0` 对最终 HTML 做一次本地离线摘要逐句修补和翻译。若本地环境不存在，先执行 `uv venv .venv --python 3.11`、`uv pip install --python .venv/bin/python -r requirements-local-translation.txt`、`.venv/bin/python code/setup_local_translator.py` 下载模型；临时兜底才使用 `python3 code/translate_abstracts.py --date YYYY-MM-DD --root . --source html --translator auto --all --sleep 1.2`。若报告由本地 renderer 生成，也可以追加运行 `--source both` 同步翻译缓存。公共翻译服务限流时允许分批重跑，但 07:00 前交付版本必须明确显示仍未补齐的句子，不能用概括译述冒充逐句翻译。
 9. 写完后检查 HTML 存在、UTF-8 可读、强相关和补充两个论文板块计数正确、强相关不超过 30 篇、补充不超过 10 篇、News 不超上限、每篇论文只有摘要折叠块且没有 Introduction 翻译块、外链格式正确，并确认页面中不含“中文逐句翻译待补”“Abstract sentence to be verified”等占位文本。
 10. 追加更新当月 `seen-YYYY-MM.md`。
 
@@ -94,7 +94,7 @@
 - 可折叠的“摘要逐句对照翻译”：必须保留英文摘要原句，并逐句给出中文对照译文；翻译要尽量贴近原句，不做压缩摘要，不合并多个句子。
 - `编辑评述`：说明这篇论文的核心优势、主要短板、为什么值得看或为什么只是观察。
 
-不再翻译 Introduction。不要伪造实验数字。摘要翻译可以使用机翻初稿，但必须人工检查术语、否定、比较关系、实验数字和限定语；如果翻译服务失败，保留英文摘要并明确标注“中文逐句翻译待补”，不要用论文简介、摘要译述或任何非逐句内容冒充逐字对照。最终交付前必须再跑一次 HTML 级翻译修补脚本；只有在源站无法取得摘要或翻译服务连续失败时，才允许保留待补标记并在页尾说明。
+不再翻译 Introduction。不要伪造实验数字。摘要翻译可以使用本地模型初稿，但必须人工检查术语、否定、比较关系、实验数字和限定语；如果翻译服务失败，保留英文摘要并明确标注“中文逐句翻译待补”，不要用论文简介、摘要译述或任何非逐句内容冒充逐字对照。最终交付前必须再跑一次 HTML 级翻译修补脚本；只有在源站无法取得摘要或翻译服务连续失败时，才允许保留待补标记并在页尾说明。
 
 ## News 栏目
 

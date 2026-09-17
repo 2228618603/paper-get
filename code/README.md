@@ -41,6 +41,24 @@ python3 code/translate_abstracts.py --date 2026-09-16 --root . --source html --a
 
 该脚本会直接扫描当天最终 HTML 的“摘要逐句对照翻译”折叠块，补齐中文翻译；如果英文仍是占位句，会尝试按 arXiv 链接重新抓取真实摘要再翻译。公共翻译服务可能限流，因此脚本支持多次断点续跑。若由本地 renderer 生成，也可以用 `--source both --all` 同步 `YYYY-MM/abstract-translations-YYYY-MM-DD.json` 缓存。
 
+## 本地离线翻译
+
+为了避免公共翻译 API 限流，推荐在新设备上先安装本地翻译环境：
+
+```bash
+uv venv .venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements-local-translation.txt
+.venv/bin/python code/setup_local_translator.py
+```
+
+模型会缓存到 Hugging Face 本地缓存。之后翻译日报时使用：
+
+```bash
+.venv/bin/python code/translate_abstracts.py --date 2026-09-17 --root . --source html --translator local --all
+```
+
+`--translator local` 不调用在线翻译服务；如果需要自动兜底，可以改成 `--translator auto`。
+
 ## 自动运行
 
 桌面端定时任务使用 `prompt.md` 作为代理任务说明。代理每次运行时应：
@@ -53,7 +71,7 @@ python3 code/translate_abstracts.py --date 2026-09-16 --root . --source html --a
 6. 先分别整理三部分：与你课题强相关的论文、扩展补充论文、News，再合并成 HTML；
 7. 强相关论文最多 30 篇，扩展补充论文最多 10 篇，News 最多 20 条，但不强行填满；
 8. 对每篇论文标注研究机构/团队、机构简介、代码状态、真机状态、实验设置和编辑评述；一作/通讯背调只作为后台排序依据，不在页面展示；
-9. 每篇论文只保留摘要折叠块，摘要需保留英文原句并做中文逐句对照；正文 HTML 生成后必须再运行 `translate_abstracts.py --source html --all` 做最终修补与校验；翻译缓存不足时明确标注待补，不得用概括译述冒充逐句翻译；不再翻译 Introduction；
+9. 每篇论文只保留摘要折叠块，摘要需保留英文原句并做中文逐句对照；正文 HTML 生成后优先运行 `.venv/bin/python code/translate_abstracts.py --source html --translator local --all` 做本地离线修补与校验；翻译缓存不足时明确标注待补，不得用概括译述冒充逐句翻译；不再翻译 Introduction；
 10. 生成 `YYYY-MM/YYYY-MM-DD-风向总结.html`；
 11. 更新当前月去重日志。
 

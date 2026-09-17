@@ -32,6 +32,22 @@ from render_report_from_packet import (
 PENDING_MARKERS = ("待补", "不可用", "未返回", "请运行", "QUERY LENGTH LIMIT EXCEEDED")
 PLACEHOLDER_EN_MARKERS = ("Abstract sentence to be verified",)
 MAX_TRANSLATION_CHARS = 450
+LOCAL_MODEL_NAME = "Helsinki-NLP/opus-mt-en-zh"
+_LOCAL_TRANSLATOR = None
+
+
+GLOSSARY_REPLACEMENTS = {
+    "愿景-语言-行动": "视觉-语言-动作",
+    "视觉-语言-行动": "视觉-语言-动作",
+    "视觉语言动作": "视觉-语言-动作",
+    "世界行动模型": "世界-动作模型",
+    "世界行动模式": "世界-动作模型",
+    "政策": "策略",
+    "实施例": "本体",
+    "机器人操纵": "机器人操作",
+    "实际世界": "真实世界",
+    "法学硕士": "大语言模型",
+}
 
 
 def plain_text(node) -> str:
@@ -43,6 +59,13 @@ def plain_text(node) -> str:
 
 def is_pending(text: str) -> bool:
     return (not text.strip()) or any(marker in text for marker in PENDING_MARKERS)
+
+
+def normalize_translation(text: str) -> str:
+    normalized = text
+    for src, dst in GLOSSARY_REPLACEMENTS.items():
+        normalized = normalized.replace(src, dst)
+    return normalized
 
 
 def is_placeholder_english(text: str) -> bool:
@@ -74,7 +97,30 @@ def chunk_sentence(sentence: str, limit: int = MAX_TRANSLATION_CHARS) -> list[st
     return final
 
 
-def translate_short(text: str, timeout: int) -> str:
+def load_local_translator():
+    global _LOCAL_TRANSLATOR
+    if _LOCAL_TRANSLATOR is not None:
+        return _LOCAL_TRANSLATOR
+    from transformers import MarianMTModel, MarianTokenizer
+
+    tokenizer = MarianTokenizer.from_pretrained(LOCAL_MODEL_NAME, local_files_only=True)
+    model = MarianMTModel.from_pretrained(LOCAL_MODEL_NAME, local_files_only=True)
+    model.eval()
+    _LOCAL_TRANSLATOR = (tokenizer, model)
+    return _LOCAL_TRANSLATOR
+
+
+def translate_local(text: str) -> str:
+    tokenizer, model = load_local_translator()
+    inputs = tokenizer([text], return_tensors="pt", padding=True, truncation=True)
+    output = model.generate(**inputs, max_new_tokens=256)
+    translated = tokenizer.decode(output[0], skip_special_tokens=True).strip()
+    if (not translated) or is_pending(translated):
+        raise RuntimeError("empty or invalid local translation")
+    return normalize_translation(translated)
+
+
+def translate_online(text: str, timeout: int) -> str:
     google_error: Exception | None = None
     try:
         response = requests.get(
@@ -92,7 +138,7 @@ def translate_short(text: str, timeout: int) -> str:
         data = response.json()
         translated = "".join(part[0] for part in data[0] if part and part[0]).strip()
         if translated and not is_pending(translated):
-            return translated
+            return normalize_translation(translated)
         raise RuntimeError("empty or invalid google translation")
     except Exception as exc:
         google_error = exc
@@ -110,14 +156,31 @@ def translate_short(text: str, timeout: int) -> str:
         raise RuntimeError(data.get("responseDetails") or f"translation status {status}")
     if (not translated) or is_pending(translated):
         raise RuntimeError(f"empty or invalid translation; google fallback failed: {google_error}")
-    return translated
+    return normalize_translation(translated)
 
 
-def translate_one(sentence: str, timeout: int) -> str:
+def translate_short(text: str, timeout: int, translator: str) -> str:
+    local_error: Exception | None = None
+    if translator in ("auto", "local"):
+        try:
+            return translate_local(text)
+        except Exception as exc:
+            local_error = exc
+            if translator == "local":
+                raise
+    try:
+        return translate_online(text, timeout)
+    except Exception as exc:
+        if local_error:
+            raise RuntimeError(f"online translation failed after local fallback failed: {local_error}; {exc}") from exc
+        raise
+
+
+def translate_one(sentence: str, timeout: int, translator: str) -> str:
     chunks = chunk_sentence(sentence)
     if len(chunks) == 1:
-        return translate_short(chunks[0], timeout)
-    return "".join(translate_short(chunk, timeout) for chunk in chunks)
+        return translate_short(chunks[0], timeout, translator)
+    return "".join(translate_short(chunk, timeout, translator) for chunk in chunks)
 
 
 def fetch_arxiv_abstract(arxiv_id: str, timeout: int) -> str:
@@ -216,7 +279,7 @@ def translate_cache(args: argparse.Namespace, root: Path) -> dict:
                 failed_count += 1
                 continue
             try:
-                zh[index] = translate_one(sentence, args.timeout)
+                zh[index] = translate_one(sentence, args.timeout, args.translator)
                 translated_count += 1
                 print(f"cache translated {aid} #{index + 1}: {zh[index][:80]}")
             except Exception as exc:
@@ -326,7 +389,7 @@ def translate_html(args: argparse.Namespace, root: Path) -> dict:
                 failed_count += 1
                 continue
             try:
-                zh = translate_one(en_text, args.timeout)
+                zh = translate_one(en_text, args.timeout, args.translator)
                 label = divs[1].select_one(".label")
                 label_text = label.get_text(strip=True) if label else "ZH"
                 set_labeled_text(soup, divs[1], label_text, zh)
@@ -365,6 +428,7 @@ def main() -> int:
     parser.add_argument("--date", required=True)
     parser.add_argument("--root", default=".")
     parser.add_argument("--source", choices=("cache", "html", "both"), default="both")
+    parser.add_argument("--translator", choices=("auto", "local", "online"), default="auto")
     parser.add_argument("--html-file", help="Specific report HTML to patch. Defaults to the largest report for the date.")
     parser.add_argument("--all", action="store_true", help="Translate every pending sentence instead of stopping at --max-sentences.")
     parser.add_argument("--dry-run", action="store_true")

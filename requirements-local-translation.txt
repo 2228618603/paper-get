@@ -1,0 +1,6 @@
+beautifulsoup4>=4.12
+requests>=2.31
+sacremoses>=0.1.1
+sentencepiece>=0.2
+torch>=2.1
+transformers>=4.40
