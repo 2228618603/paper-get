@@ -47,10 +47,21 @@ STRONG_PATTERNS = (
     "self improving",
     "self-evolving",
     "robot data",
-    "mobile manipulation",
-    "humanoid",
-    "whole-body",
-    "real robot",
+    "data collection",
+    "data generation",
+    "data factory",
+    "human video",
+    "human videos",
+    "teleoperation data",
+    "latent action",
+    "real-to-sim",
+    "sim-to-real",
+    "dual-arm",
+    "dual arm",
+    "bimanual",
+    "robot manipulation",
+    "contact-rich manipulation",
+    "dexterous manipulation",
 )
 
 SUPPLEMENT_PATTERNS = (
@@ -68,6 +79,51 @@ SUPPLEMENT_PATTERNS = (
     "safety",
     "deployment",
     "inference",
+)
+
+CONTROL_SCOPE_PATTERNS = (
+    "humanoid",
+    "whole-body",
+    "whole body",
+    "quadruped",
+    "legged",
+    "locomotion",
+    "loco-manipulation",
+    "traversal",
+    "gait",
+    "bipedal",
+    "autonomous driving",
+    "driving",
+)
+
+DUAL_ARM_OR_MANIPULATION_PATTERNS = (
+    "dual-arm",
+    "dual arm",
+    "bimanual",
+    "two-arm",
+    "two arm",
+    "contact-rich",
+    "dexterous manipulation",
+)
+
+DATA_INFRA_PATTERNS = (
+    "robot data",
+    "data collection",
+    "data generation",
+    "data factory",
+    "dataset",
+    "demonstration",
+    "demonstrations",
+    "human video",
+    "human videos",
+    "human demonstration",
+    "teleoperation",
+    "open x-embodiment",
+    "simulation",
+    "simulator",
+    "real-to-sim",
+    "sim-to-real",
+    "world model simulator",
 )
 
 
@@ -447,6 +503,18 @@ def score(entry: dict, config: dict, end: dt.datetime) -> tuple[int, list[str], 
         if pattern in text:
             points += 2
             reasons.append(f"supplement:{pattern}")
+    control_scope_hits = [pattern for pattern in CONTROL_SCOPE_PATTERNS if pattern in text]
+    manipulation_hits = [pattern for pattern in DUAL_ARM_OR_MANIPULATION_PATTERNS if pattern in text]
+    data_infra_hits = [pattern for pattern in DATA_INFRA_PATTERNS if pattern in text]
+    for pattern in control_scope_hits:
+        points += 1
+        reasons.append(f"supplement_control_scope:{pattern}")
+    for pattern in manipulation_hits:
+        points += 3
+        reasons.append(f"primary_manipulation_scope:{pattern}")
+    for pattern in data_infra_hits:
+        points += 3
+        reasons.append(f"primary_data_scope:{pattern}")
     if re.search(r"\b(real[- ]world|real[- ]robot|hardware|physical robot|robot)\b", text):
         points += 4
         reasons.append("evidence:real_robot_or_hardware_term")
@@ -480,9 +548,21 @@ def score(entry: dict, config: dict, end: dt.datetime) -> tuple[int, list[str], 
         elif age_days <= 7:
             points += 2
             reasons.append("fresh:7d")
-    strong = any(reason.startswith("strong:") for reason in reasons)
+    core_model = any(reason.startswith("strong:") for reason in reasons)
+    control_scope = bool(control_scope_hits)
+    manipulation_scope = bool(manipulation_hits)
+    data_infra_scope = bool(data_infra_hits)
+    # The user's core interest is dual-arm manipulation VLA/WAM and its data/sim
+    # stack. Humanoid, legged, quadruped, traversal, and driving control papers
+    # are useful context, but default to the supplement bucket unless their main
+    # contribution clearly transfers through VLA/WAM/data infrastructure.
+    strong = (
+        (core_model and not control_scope)
+        or (core_model and manipulation_scope)
+        or (data_infra_scope and (manipulation_scope or not control_scope))
+    )
     supplement = any(reason.startswith("supplement:") for reason in reasons)
-    bucket = "strong_related" if strong else "supplement" if supplement else "other_ai"
+    bucket = "strong_related" if strong else "supplement" if (supplement or control_scope) else "other_ai"
     return points, reasons, bucket
 
 
